@@ -73,7 +73,7 @@ target_include_directories(better-enums INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/b
 target_compile_definitions(better-enums INTERFACE BETTER_ENUMS_STRICT_CONVERSION=1)
 
 add_library(googletest STATIC googletest/googletest/src/gtest_main.cc googletest/googletest/src/gtest-all.cc)
-target_include_directories(googletest PUBLIC googletest/googletest/include)
+target_include_directories(googletest SYSTEM PUBLIC googletest/googletest/include)
 target_include_directories(googletest PRIVATE googletest/googletest)
 target_compile_definitions(googletest PUBLIC GTEST_HAS_PTHREAD=0)
 
@@ -85,7 +85,7 @@ add_subdirectory(libfat16)
 # The imgui target is including both imgui and imgui_club.
 add_library(imgui STATIC imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/misc/cpp/imgui_stdlib.cpp)
 target_compile_definitions(imgui PRIVATE IMGUI_DISABLE_DEMO_WINDOWS)
-target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
+target_include_directories(imgui SYSTEM PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
 	"${CMAKE_CURRENT_SOURCE_DIR}/imgui_club/imgui_memory_editor/")
 
 add_library(miniz STATIC miniz/miniz.c miniz/miniz.h)
