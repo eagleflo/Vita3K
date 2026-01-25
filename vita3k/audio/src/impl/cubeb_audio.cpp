@@ -161,3 +161,32 @@ void CubebAudioAdapter::switch_state(const bool pause) {
             cubeb_stream_start(port.out_stream);
     }
 }
+
+int CubebAudioAdapter::get_rest_sample(AudioOutPort &out_port) {
+    CubebAudioOutPort &port = static_cast<CubebAudioOutPort &>(out_port);
+
+    std::lock_guard<std::mutex> lock(port.mutex);
+    if (port.nb_buffers_ready == 0) {
+        return 0;
+    }
+
+    // Calculate remaining bytes in all ready buffers
+    int bytes_remaining = port.nb_buffers_ready * port.len_bytes;
+    // Subtract already consumed bytes from the current buffer
+    bytes_remaining -= port.audio_buffers[port.next_audio_buffer].buffer_position;
+
+    // Convert to samples (frames)
+    return bytes_remaining / (port.spec.channels * sizeof(int16_t));
+}
+
+void CubebAudioAdapter::wait_for_drain(ThreadState &thread, AudioOutPort &out_port) {
+    CubebAudioOutPort &port = static_cast<CubebAudioOutPort &>(out_port);
+
+    std::unique_lock<std::mutex> lock(port.mutex);
+    // Wait until all buffers are consumed
+    while (port.nb_buffers_ready > 0) {
+        thread.update_status(ThreadStatus::wait);
+        port.cond_var.wait(lock);
+        thread.update_status(ThreadStatus::run);
+    }
+}

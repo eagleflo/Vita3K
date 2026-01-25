@@ -118,3 +118,15 @@ int SDLAudioAdapter::get_rest_sample(AudioOutPort &out_port) {
     // we have the number of bytes left, we can convert it back to the number of samples left
     return bytes_available / SDL_AUDIO_FRAMESIZE(dst_spec);
 }
+
+void SDLAudioAdapter::wait_for_drain(ThreadState &thread, AudioOutPort &out_port) {
+    SDLAudioOutPort &port = static_cast<SDLAudioOutPort &>(out_port);
+
+    // Wait until the audio queue is empty using thread suspension
+    while (get_rest_sample(port) > 0) {
+        port.thread = thread.id;
+        std::unique_lock<std::mutex> mlock(thread.mutex);
+        thread.update_status(ThreadStatus::wait);
+        thread.status_cond.wait(mlock, [&]() { return thread.status == ThreadStatus::run; });
+    }
+}

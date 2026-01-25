@@ -56,4 +56,6 @@ public:
     void audio_output(ThreadState &thread, AudioOutPort &out_port, const void *buffer) override;
     void set_volume(AudioOutPort &out_port, float volume) override;
     void switch_state(const bool pause) override;
+    int get_rest_sample(AudioOutPort &out_port) override;
+    void wait_for_drain(ThreadState &thread, AudioOutPort &out_port) override;
 };
