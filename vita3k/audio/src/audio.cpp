@@ -71,10 +71,12 @@ AudioOutPortPtr AudioState::open_port(int nb_channels, int freq, int nb_sample) 
 void AudioState::audio_output(ThreadState &thread, AudioOutPort &out_port, const void *buffer) {
     // A null buffer means wait for all previous audio to be output (drain the queue)
     if (!buffer) {
+        LOG_DEBUG("Audio output called with null buffer");
         adapter->wait_for_drain(thread, out_port);
         return;
+    } else {
+        LOG_DEBUG("Audio output called with buffer size {}", out_port.len_bytes);
     }
-
     adapter->audio_output(thread, out_port, buffer);
 
     uint64_t now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
